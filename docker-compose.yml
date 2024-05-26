@@ -1,0 +1,42 @@
+services:
+  postgre-db:
+    image: "postgres:15"
+    container_name: postgre-db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"
+    mem_reservation: "512M"
+    mem_limit: "1024M"
+
+  prometheus:
+    container_name: prometheus-service
+    image: prom/prometheus
+    restart: always
+    hostname: prometheus
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    mem_reservation: "512M"
+    mem_limit: "1024M"
+
+  grafana:
+    container_name: grafana-service
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    mem_reservation: "512M"
+    mem_limit: "1024M"
+    environment:
+      - "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-opensearch-datasource"
+    volumes:
+      - ./docker/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./docker/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
